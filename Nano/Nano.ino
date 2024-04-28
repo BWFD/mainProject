@@ -18,7 +18,7 @@ specialCmd  , divingProcessTime              , processTime , controlDepthTime, f
 Servo white;              //油門信號
 Servo blue;               //控制馬達
 SoftwareSerial BT(10,11); //HC05
-int notConnect = 12;       //是否有連線
+int statePin = 12;       //是否有連線
 String  Fullcmd = "";     //儲存命令
 
 long int divingProcessTime;        
