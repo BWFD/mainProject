@@ -2,9 +2,9 @@
 
 /*
 
-True/False
-是否是測試cmd,開始下潛後固定此時間會到達指定深度,在水下待多久 , 控制深度          ,吸滿所需時間,推水到空所需時間,抽水此時間後下潛
-isTesting   ,divingProcessTime              ,processTime , controlDepthTime ,fullTime   ,clearTime      ,diveTime
+NULL,isTesting,absort,push
+是否是測試cmd, 開始下潛後固定此時間會到達指定深度, 在水下待多久 , 控制深度         , 吸滿所需時間, 推水到空所需時間, 抽水此時間後下潛
+specialCmd  , divingProcessTime              , processTime , controlDepthTime, fullTime   , clearTime      , diveTime
 
 NULL,10,10,3,5,5,10
 行為 : 啟動抽水馬達10s > 停機10s > 抽水馬達作動3s推水 > 抽水馬達作動3s吸水  > 抽水馬達作動3s推水 > 抽水馬達作動1s吸水 > 推水10s 
@@ -92,7 +92,7 @@ void loop() {
 
       Serial.println("send Nano: "+Fullcmd); BT.print(Fullcmd);
       client.print("recived");
-      if(!getValue(Fullcmd, ',', 0) == "True") {
+      if(getValue(Fullcmd, ',', 0) == "NULL") {
         divingProcessTime = getValue(Fullcmd, ',',  1).toInt(); //開始下潛後固定此時間會到達指定深度 
         processTime       = getValue(Fullcmd, ',',  2).toInt(); //在水下待多久
         collectionTime = divingProcessTime + processTime; 
