@@ -132,10 +132,10 @@ void controlDepth() {
     delay(waitMovingTime * 1000);  //預設到Xm處，在等待其下潛到X.99m
 
     blue.write(180);
-    delay(controlDepthTime * 1000);  //在X.99m處，在等待其上浮到Xm
+    delay(controlDepthTime * 1000);  
     blue.write(90);
 
-    delay(waitMovingTime * 1000);
+    delay(waitMovingTime * 1000); //在X.99m處，在等待其上浮到Xm
 
     blue.write(0);
     delay(controlDepthTime * 1000);
