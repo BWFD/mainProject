@@ -50,9 +50,9 @@ String PH_string  = "";
 
 
 String getValue(String,char,int);
-String getNTU();
-String getTDS();
-String getPH();
+float getNTU();
+float getTDS();
+float getPH();
 void collectionData(long int);
 
 void setup() {

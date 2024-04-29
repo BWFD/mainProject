@@ -9,6 +9,9 @@ specialCmd  , divingProcessTime              , processTime , controlDepthTime, f
 NULL,10,10,3,5,5,10
 行為 : 啟動抽水馬達10s > 停機10s > 抽水馬達作動3s推水 > 抽水馬達作動3s吸水  > 抽水馬達作動3s推水 > 抽水馬達作動1s吸水 > 推水10s 
 
+NULL,40,60,10,xxx,100,25
+吸水25s後機體下潛，等待40s到達指定深度，陸續抽推水10s維持深度(一共60s)，推水直到上浮(用大數或是測驗值)
+
 isTesting 
 行為 : 發送isTesting給Nano，在發送GPS給server
 

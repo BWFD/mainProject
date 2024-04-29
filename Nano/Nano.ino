@@ -39,6 +39,7 @@ void setup() {
   BT.begin(9600);       
   white.attach(5);      
   blue.attach(6);
+  pinMode(statePin,INPUT);
 
   blue.write(90);       //先預設馬達停止
   delay(500);
@@ -99,8 +100,9 @@ void Diving() {
   delay(diveTime * 1000); //執行完後應當下潛，但蓄水槽應未滿
   blue.write(90);
 
+  long int startTime = millis();
   while(millis() - startTime <= divingProcessTime * 1000) { //開始等待下潛到深度
-    if(notConnect) {
+    if(!digitalRead(statePin)) {
       Floating();
       return;
     }
@@ -121,7 +123,7 @@ void controlDepth() {
   long int startTime = millis();
 
   while(millis() - startTime <= processTime * 1000) {
-    if(notConnect) {
+    if(!digitalRead(statePin)) {
       Floating();
       return;
     }
