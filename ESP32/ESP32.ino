@@ -3,11 +3,18 @@
 /*
 
 NULL,isTesting,absort,push
-是否是測試cmd, 開始下潛後固定此時間會到達指定深度, 在水下待多久 , 控制深度         , 吸滿所需時間, 推水到空所需時間, 抽水此時間後下潛
-specialCmd  , divingProcessTime              , processTime , controlDepthTime, fullTime   , clearTime      , diveTime
+是否是測試cmd, 開始下潛後固定此時間會到達指定深度, 在水下待多久 , 推水此時間後會上浮, 等待此時間移動到深度 , 推水到空所需時間, 抽水此時間後下潛
+specialCmd  , divingProcessTime              , processTime , controlDepthTime, waitMovingTime     , clearTime      , diveTime
 
 NULL,10,10,3,5,5,10
 行為 : 啟動抽水馬達10s > 停機10s > 抽水馬達作動3s推水 > 抽水馬達作動3s吸水  > 抽水馬達作動3s推水 > 抽水馬達作動1s吸水 > 推水10s 
+
+NULL,40,60,10,5,100,25
+吸水25s後機體下潛，等待40s到達指定深度，陸續抽推水10s後等待5s(可能超過60s)，推水直到上浮(用大數(100)或是測驗值)
+
+
+NULL,40,60,10,5,30,25
+吸水25s後機體下潛，等待40s到達指定深度，陸續抽推水10s後等待5s(可能超過60s)，推水30s後停機(應當無水在機體內)
 
 isTesting 
 行為 : 發送isTesting給Nano，在發送GPS給server

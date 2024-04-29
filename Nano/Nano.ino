@@ -7,8 +7,8 @@ https://youyouyou.pixnet.net/blog/post/121477396-arduino%E7%9A%84split%E5%87%BD%
 做測試得知蓄水槽抽多久會下潛
 
 NULL,isTesting,absort,push
-是否是測試cmd, 開始下潛後固定此時間會到達指定深度, 在水下待多久 , 控制深度         , 吸滿所需時間, 推水到空所需時間, 抽水此時間後下潛
-specialCmd  , divingProcessTime              , processTime , controlDepthTime, fullTime   , clearTime      , diveTime
+是否是測試cmd, 開始下潛後固定此時間會到達指定深度, 在水下待多久 , 推水此時間後會上浮, 等待此時間移動到深度 , 推水到空所需時間, 抽水此時間後下潛
+specialCmd  , divingProcessTime              , processTime , controlDepthTime, waitMovingTime     , clearTime      , diveTime
 
 */
 #include<SoftwareSerial.h>
@@ -24,7 +24,7 @@ String  Fullcmd = "";     //儲存命令
 long int divingProcessTime;        
 long int processTime;      
 long int controlDepthTime; 
-long int fullTime;         
+long int waitMovingTime;         
 long int clearTime;       
 long int diveTime; 
 
@@ -70,7 +70,7 @@ void loop() {
     divingProcessTime = getValue(Fullcmd, ',',  1).toInt(); //開始下潛後固定此時間會到達指定深度
     processTime       = getValue(Fullcmd, ',',  2).toInt(); //在水下待多久
     controlDepthTime  = getValue(Fullcmd, ',',  3).toInt(); //控制深度
-    fullTime          = getValue(Fullcmd, ',',  4).toInt(); //吸滿所需時間
+    waitMovingTime          = getValue(Fullcmd, ',',  4).toInt(); //吸滿所需時間
     clearTime         = getValue(Fullcmd, ',',  5).toInt(); //推水到空所需時間
     diveTime          = getValue(Fullcmd, ',',  6).toInt(); //抽水到此時間後下潛
 
@@ -115,6 +115,7 @@ void Diving() {
 void Floating() {
   blue.write(180);
   delay(clearTime * 1000);
+  blue.write(90);
   Fullcmd = "";  //重設Fullcmd,任務完成
 }
 
@@ -128,16 +129,17 @@ void controlDepth() {
       return;
     }
 
-    delay((controlDepthTime * 1000) -100);  //預設到Xm處，在等待其下潛到X.99m
-    blue.write(90);
-    delay(100);
+    delay(waitMovingTime * 1000);  //預設到Xm處，在等待其下潛到X.99m
 
     blue.write(180);
-    delay((controlDepthTime * 1000) -100);  //在X.99m處，在等待其上浮到Xm
+    delay(controlDepthTime * 1000);  //在X.99m處，在等待其上浮到Xm
     blue.write(90);
-    delay(100);
+
+    delay(waitMovingTime * 1000);
 
     blue.write(0);
+    delay(controlDepthTime * 1000);
+    blue.write(90);
   }
 
   Floating(); //開始上浮
@@ -162,4 +164,6 @@ void TEST() {
 081 會需要知道吸滿水的時間嗎?，既然未滿時就會下潛還需要抽滿嗎?為了下潛速度?且固定密度應對於公式計算有正向作用 
  
 115 要如何確定說控制深度是有準確度的?在泳池中並無對照物/比例尺  -> 捲尺
+
+112 整體在水下時間可能不符合設定值
 */
