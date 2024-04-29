@@ -2,7 +2,7 @@
 HardwareSerial MySerial(1);
 
 String getValue(String,char,int);
-void OpenSocket();
+bool flag = true;
 
 void setup() {
   Serial.begin(9600);
@@ -28,6 +28,7 @@ void setup() {
 void loop() {
   String cmd="";
   String response="";
+  String temp;
   String Latitude="default";
   String Longitude="default";
 
@@ -44,13 +45,35 @@ void loop() {
     Latitude = getValue(response,',',2);
     Longitude = getValue(response,',',4);
 
-    response = "start@4@" + Latitude + "," + Longitude + "@7.1,7.2,7.3,7.4@3.2,3.3,2.2,3.5@4.0,3.4,1.4,4.4@end";
-    String temp = "AT+QISEND=0,"+String(response.length())+","+response+"\r\n";
+    if(flag) {
+      response = "start@test@2407.8945,12041.7649@end";
+      temp = "AT+QISEND=0,"+String(response.length())+","+response+"\r\n"; 
+      flag = false;
+    }
+    
+    response = "start@GPS@2408.8162,12044.1138@end";
+    temp = "AT+QISEND=0,"+String(response.length())+","+response+"\r\n";
     MySerial.print(temp);
+    delay(300);
+
+    response = "start@TDS@12@1.8,3.5,1.1,5.0,1.1,3.6,0.0,4.0,3.0,0.8,0.7,0.8@end";
+    temp = "AT+QISEND=0,"+String(response.length())+","+response+"\r\n";
+    MySerial.print(temp);
+    delay(300);
+
+    response = "start@NTU@12@1.7,1.3,4.9,2.2,1.7,1.1,4.3,1.7,4.4,2.4,3.8,4.3@end";
+    temp = "AT+QISEND=0,"+String(response.length())+","+response+"\r\n";
+    MySerial.print(temp);
+    delay(300);
+
+    response = "start@PH@12@4.2,2.0,1.6,0.8,1.1,2.3,1.9,4.7,2.2,2.6,2.5,1.1@end";
+    temp = "AT+QISEND=0,"+String(response.length())+","+response+"\r\n";
+    MySerial.print(temp);
+    delay(300);
   }
   
   if(Latitude=="" || Longitude=="") {
-    MySerial.print("AT+QISEND=0,9,ERROR!!!!\r\n");
+    //MySerial.print("AT+QISEND=0,9,ERROR!!!!\r\n");
     MySerial.readString();
   }
 
