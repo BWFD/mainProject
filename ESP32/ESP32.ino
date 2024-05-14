@@ -49,7 +49,7 @@ WiFiServer server(80);
 String Fullcmd="";
 
 //感測器接腳
-int NTUpin = 12;
+int NTUpin = 27;
 int TDSpin = 13;
 int PHpin  = 14;
 
@@ -69,6 +69,10 @@ void collectionData(long int);
 String getGPS();
 
 void setup() {
+  pinMode(NTUpin,OUTPUT);
+  pinMode(TDSpin,OUTPUT);
+  pinMode(PHpin,OUTPUT);
+
   Serial.begin(115200);
   WiFi.softAP(ssidAP,passwordAP);
   delay(500);
@@ -88,7 +92,7 @@ void setup() {
 
   MySerial.begin(9600,SERIAL_8N1,16,17);
 
-  MySerial.print("AT+QIOPEN=1,0,\"UDP\",118.27.81.25" + port + "\r\n");
+  MySerial.print("AT+QIOPEN=1,0,\"UDP\",118.27.81.25," + port + "\r\n");
   MySerial.readString();
   delay(300);
 
@@ -122,21 +126,27 @@ void loop() {
 
       if(getValue(Fullcmd, ',', 0) == "isTesting") {
           String temp = "start@test@" + getGPS() + "@end";
-          MySerial.print("AT+QISEND=0," + String(tmep.length()) +"," + temp + "\r\n");
+          for(int i=0; i<5; i++)  {
+            MySerial.print("AT+QISEND=0," + String(temp.length()) +"," + temp + "\r\n");
+            delay(500);
+          }
           Fullcmd = "";
       }
       else
       if(getValue(Fullcmd, ',', 0) == "NULL") {
         divingProcessTime = getValue(Fullcmd, ',',  1).toInt(); //開始下潛後固定此時間會到達指定深度 
         processTime       = getValue(Fullcmd, ',',  2).toInt(); //在水下待多久
+
+
+
         collectionTime    = (divingProcessTime * 2) + processTime; 
 
         collectionData(collectionTime);
-        delay(20000)
+        //delay(20000);
         
-        NTU_string.remove(NTU_string.length-1);
-        TDS_string.remove(TDS_string.length-1);
-        PH_string.remove(PH_string.length-1);
+        NTU_string.remove(NTU_string.length()-1);
+        TDS_string.remove(TDS_string.length()-1);
+        PH_string.remove(PH_string.length()-1);
         
         while(true) {
           client = server.available();
@@ -183,18 +193,21 @@ String getValue(String data, char separator, int index) { //分割命令
 float getNTU() {
   int sensorValue = analogRead(NTUpin);
   float voltage = sensorValue * (5.0 / 4095.0); 
+  Serial.println("NTU :" + String(analogRead(NTUpin)));
   return voltage;
 }
 
 float getTDS() {
   int sensorValue = analogRead(TDSpin);
-  float voltage = sensorValue * (5.0 / 4095.0); 
+  float voltage = sensorValue * (5.0 / 4095.0);
+  Serial.println("TDS :" + String(sensorValue)); 
   return voltage;
 }
 
 float getPH() {
   int sensorValue = analogRead(PHpin);
-  float voltage = sensorValue * (5.0 / 4095.0); 
+  float voltage = sensorValue * (5.0 / 4095.0);
+  Serial.println("PH :" + String(sensorValue)); 
   return voltage;
 }
 
@@ -207,9 +220,12 @@ void collectionData(long int collectionTime) {
 
   while(millis() - startTime <= collectionTime * 1000) {
     if(counter <= 5) {
-      avg_NTU = avg_NTU + (getNTU/5.0);
-      avg_TDS = avg_TDS + (getTDS/5.0);
-      avg_PH  = avg_PH  + (getPH/5.0);
+      /*/
+      avg_NTU = avg_NTU + (getNTU()/5.0);
+      avg_TDS = avg_TDS + (getTDS()/5.0);
+      avg_PH  = avg_PH  + (getPH()/5.0);
+      */
+      Serial.println(analogRead(PHpin));
       counter = counter + 1;
       data_counter = data_counter + 1; 
       delay(1000); 
@@ -227,9 +243,12 @@ String getGPS() {
   String response = "";
   MySerial.print("AT+QGNSSRD=\"NMEA/GGA\"\r\n");
   
-  while(!MySerial.available()){}
-
-  response = MySerial.readString();
+  while(true){
+    if(MySerial.available()) {
+      response = MySerial.readString();
+      break;
+    }
+  }
   response = getValue(response,'$', 1);
   response = getValue(response,'\n', 0);
   
