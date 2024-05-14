@@ -2,7 +2,7 @@
 
 /*
 
-NULL,isTesting,absort,push
+NULL,isTesting,absort,push,stop
 是否是測試cmd, 開始下潛後固定此時間會到達指定深度, 在水下待多久 , 推水此時間後會上浮, 等待此時間移動到深度 , 推水到空所需時間, 抽水此時間後下潛
 specialCmd  , divingProcessTime              , processTime , controlDepthTime, waitMovingTime     , clearTime      , diveTime
 
@@ -34,7 +34,9 @@ push,10
 
 #include<WiFi.h>
 #include<BluetoothSerial.h>
+#include<HardwareSerial.h>
 
+HardwareSerial MySerial(1);
 const char*ssidAP="ESP32_WiFi";
 const char*passwordAP="3B017126";
 
@@ -55,12 +57,16 @@ String NTU_string = "";
 String TDS_string = "";
 String PH_string  = "";
 
+int data_counter = 0;
+
+String port = "8190";
 
 String getValue(String,char,int);
 float getNTU();
 float getTDS();
 float getPH();
 void collectionData(long int);
+String getGPS();
 
 void setup() {
   Serial.begin(115200);
@@ -79,6 +85,20 @@ void setup() {
     }
     Serial.println("succ");
   }
+
+  MySerial.begin(9600,SERIAL_8N1,16,17);
+
+  MySerial.print("AT+QIOPEN=1,0,\"UDP\",118.27.81.25" + port + "\r\n");
+  MySerial.readString();
+  delay(300);
+
+  MySerial.print("AT+QGNSSC=1\r\n");
+  MySerial.readString();
+  delay(300);
+
+  MySerial.print("AT+QGNSSAGPS=1\r\n");
+  MySerial.readString();
+  delay(300);
 }
 
 void loop() {
@@ -90,32 +110,58 @@ void loop() {
         Serial.println(Fullcmd);
       }
     }
+
     long int divingProcessTime;
     long int processTime;
     long int collectionTime;
+
     if(Fullcmd!="") {
-
-
 
       Serial.println("send Nano: "+Fullcmd); BT.print(Fullcmd);
       client.print("recived");
+
+      if(getValue(Fullcmd, ',', 0) == "isTesting") {
+          String temp = "start@test@" + getGPS() + "@end";
+          MySerial.print("AT+QISEND=0," + String(tmep.length()) +"," + temp + "\r\n");
+          Fullcmd = "";
+      }
+      else
       if(getValue(Fullcmd, ',', 0) == "NULL") {
         divingProcessTime = getValue(Fullcmd, ',',  1).toInt(); //開始下潛後固定此時間會到達指定深度 
         processTime       = getValue(Fullcmd, ',',  2).toInt(); //在水下待多久
-        collectionTime = divingProcessTime + processTime; 
+        collectionTime    = (divingProcessTime * 2) + processTime; 
 
         collectionData(collectionTime);
+        delay(20000)
+        
+        NTU_string.remove(NTU_string.length-1);
+        TDS_string.remove(TDS_string.length-1);
+        PH_string.remove(PH_string.length-1);
+        
+        while(true) {
+          client = server.available();
+          if(client) {
+            if(client.available()) break;
+          }
+          String GPS_string = "start@GPS@" + getGPS() + "@end";
+          MySerial.print("AT+QISEND=0," + String(GPS_string.length()) + "," + GPS_string + "\r\n");
+          delay(1000);
+
+          NTU_string = "start@NTU@" + String(data_counter) + "@" + NTU_string + "@end";
+          MySerial.print("AT+QISEND=0," + String(NTU_string.length()) + "," + NTU_string + "\r\n");
+          delay(1000);
+
+          TDS_string = "start@TDS@" + String(data_counter) + "@" + TDS_string + "@end";
+          MySerial.print("AT+QISEND=0," + String(TDS_string.length()) + "," + TDS_string + "\r\n");
+          delay(1000);
+
+          PH_string = "start@TDS@" + String(data_counter) + "@" + PH_string + "@end";
+          MySerial.print("AT+QISEND=0," + String(PH_string.length()) + "," + PH_string + "\r\n");
+          delay(5000);
+        }
       }
       Fullcmd = "";
     }
-
-    float avg_NTU = 0.0;
-    float avg_TDS = 0.0;
-    float avg_PH = 0.0;
-
-    int counter = 1;
-    long int startTime = millis();
-
     
 }
 
@@ -153,5 +199,42 @@ float getPH() {
 }
 
 void collectionData(long int collectionTime) {
+  long int startTime = millis();
+  float avg_NTU = 0.0;
+  float avg_TDS = 0.0;
+  float avg_PH  = 0.0;
+  int counter = 1;
 
+  while(millis() - startTime <= collectionTime * 1000) {
+    if(counter <= 5) {
+      avg_NTU = avg_NTU + (getNTU/5.0);
+      avg_TDS = avg_TDS + (getTDS/5.0);
+      avg_PH  = avg_PH  + (getPH/5.0);
+      counter = counter + 1;
+      data_counter = data_counter + 1; 
+      delay(1000); 
+    } 
+    else {
+      counter = 1;
+      NTU_string = NTU_string + String(avg_NTU) + ",";
+      TDS_string = TDS_string + String(avg_TDS) + ",";
+      PH_string  = NTU_string + String(avg_PH)  + ",";
+    }
+  }
+}
+
+String getGPS() {
+  String response = "";
+  MySerial.print("AT+QGNSSRD=\"NMEA/GGA\"\r\n");
+  
+  while(!MySerial.available()){}
+
+  response = MySerial.readString();
+  response = getValue(response,'$', 1);
+  response = getValue(response,'\n', 0);
+  
+  String  Latitude  = getValue(response, ',', 2);
+  String  Longitude = getValue(response, ',', 4);
+  
+  return (Latitude + "," + Longitude);
 }

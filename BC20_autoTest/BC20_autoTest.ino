@@ -11,17 +11,14 @@ void setup() {
   
   MySerial.print("AT+QIOPEN=1,0,\"UDP\",118.27.81.25,8190\r\n");
   MySerial.readString();
-  
   delay(300);
 
   MySerial.print("AT+QGNSSC=1\r\n");
   MySerial.readString();
-  
   delay(300);
 
   MySerial.print("AT+QGNSSAGPS=1\r\n");
   MySerial.readString();
-  
   delay(300);
 }
 
