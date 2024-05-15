@@ -12,9 +12,9 @@ NULL,10,10,3,5,5,10
 NULL,40,60,10,5,100,25
 吸水25s後機體下潛，等待40s到達指定深度，陸續抽推水10s後等待5s(可能超過60s)，推水直到上浮(用大數(100)或是測驗值)
 
-
-NULL,40,60,10,5,30,25
-吸水25s後機體下潛，等待40s到達指定深度，陸續抽推水10s後等待5s(可能超過60s)，推水30s後停機(應當無水在機體內)
+0    1  2  3  4 5  6
+NULL,40,60,10,5,32,25
+吸水25s後機體下潛，等待40s到達指定深度，陸續抽推水10s後等待5s(可能超過60s)，推水32s後停機(應當無水在機體內)
 
 isTesting 
 行為 : 發送isTesting給Nano，在發送GPS給server
@@ -49,9 +49,9 @@ WiFiServer server(80);
 String Fullcmd="";
 
 //感測器接腳
-int NTUpin = 27;
-int TDSpin = 13;
-int PHpin  = 14;
+int NTUpin = 35;
+int TDSpin = 32;
+int PHpin  = 34;
 
 String NTU_string = "";
 String TDS_string = "";
@@ -69,9 +69,9 @@ void collectionData(long int);
 String getGPS();
 
 void setup() {
-  pinMode(NTUpin,OUTPUT);
-  pinMode(TDSpin,OUTPUT);
-  pinMode(PHpin,OUTPUT);
+  pinMode(NTUpin,INPUT);
+  pinMode(TDSpin,INPUT);
+  pinMode(PHpin,INPUT);
 
   Serial.begin(115200);
   WiFi.softAP(ssidAP,passwordAP);
@@ -117,6 +117,7 @@ void loop() {
 
     long int divingProcessTime;
     long int processTime;
+    long int diveTime;
     long int collectionTime;
 
     if(Fullcmd!="") {
@@ -134,20 +135,23 @@ void loop() {
       }
       else
       if(getValue(Fullcmd, ',', 0) == "NULL") {
-        divingProcessTime = getValue(Fullcmd, ',',  1).toInt(); //開始下潛後固定此時間會到達指定深度 
-        processTime       = getValue(Fullcmd, ',',  2).toInt(); //在水下待多久
-
+        divingProcessTime = getValue(Fullcmd, ',', 1).toInt(); //開始下潛後固定此時間會到達指定深度 
+        processTime       = getValue(Fullcmd, ',', 2).toInt(); //在水下待多久
+        diveTime          = getValue(Fullcmd, ',', 6).toInt(); //等待此時間後下潛
 
 
         collectionTime    = (divingProcessTime * 2) + processTime; 
-
+        delay(diveTime * 1000);
         collectionData(collectionTime);
-        //delay(20000);
+        delay(20000);
         
         NTU_string.remove(NTU_string.length()-1);
         TDS_string.remove(TDS_string.length()-1);
         PH_string.remove(PH_string.length()-1);
-        
+
+        NTU_string = "start@NTU@" + String(data_counter) + "@" + NTU_string + "@end";
+        TDS_string = "start@TDS@" + String(data_counter) + "@" + TDS_string + "@end";
+        PH_string  = "start@PH@" + String(data_counter) + "@" + PH_string + "@end";
         while(true) {
           client = server.available();
           if(client) {
@@ -155,18 +159,19 @@ void loop() {
           }
           String GPS_string = "start@GPS@" + getGPS() + "@end";
           MySerial.print("AT+QISEND=0," + String(GPS_string.length()) + "," + GPS_string + "\r\n");
+          Serial.println(String(GPS_string.length()) + "," + GPS_string + "\r\n");
           delay(1000);
 
-          NTU_string = "start@NTU@" + String(data_counter) + "@" + NTU_string + "@end";
           MySerial.print("AT+QISEND=0," + String(NTU_string.length()) + "," + NTU_string + "\r\n");
+          Serial.println(String(NTU_string.length()) + "," + NTU_string + "\r\n");
           delay(1000);
 
-          TDS_string = "start@TDS@" + String(data_counter) + "@" + TDS_string + "@end";
           MySerial.print("AT+QISEND=0," + String(TDS_string.length()) + "," + TDS_string + "\r\n");
+          Serial.println(String(TDS_string.length()) + "," + TDS_string + "\r\n");
           delay(1000);
 
-          PH_string = "start@TDS@" + String(data_counter) + "@" + PH_string + "@end";
           MySerial.print("AT+QISEND=0," + String(PH_string.length()) + "," + PH_string + "\r\n");
+          Serial.println(String(PH_string.length()) + "," + PH_string + "\r\n");
           delay(5000);
         }
       }
@@ -193,21 +198,18 @@ String getValue(String data, char separator, int index) { //分割命令
 float getNTU() {
   int sensorValue = analogRead(NTUpin);
   float voltage = sensorValue * (5.0 / 4095.0); 
-  Serial.println("NTU :" + String(analogRead(NTUpin)));
   return voltage;
 }
 
 float getTDS() {
   int sensorValue = analogRead(TDSpin);
-  float voltage = sensorValue * (5.0 / 4095.0);
-  Serial.println("TDS :" + String(sensorValue)); 
+  float voltage = sensorValue * (5.0 / 4095.0); 
   return voltage;
 }
 
 float getPH() {
   int sensorValue = analogRead(PHpin);
-  float voltage = sensorValue * (5.0 / 4095.0);
-  Serial.println("PH :" + String(sensorValue)); 
+  float voltage = sensorValue * (5.0 / 4095.0); 
   return voltage;
 }
 
@@ -220,12 +222,11 @@ void collectionData(long int collectionTime) {
 
   while(millis() - startTime <= collectionTime * 1000) {
     if(counter <= 5) {
-      /*/
+      
       avg_NTU = avg_NTU + (getNTU()/5.0);
       avg_TDS = avg_TDS + (getTDS()/5.0);
       avg_PH  = avg_PH  + (getPH()/5.0);
-      */
-      Serial.println(analogRead(PHpin));
+      
       counter = counter + 1;
       data_counter = data_counter + 1; 
       delay(1000); 
@@ -234,7 +235,11 @@ void collectionData(long int collectionTime) {
       counter = 1;
       NTU_string = NTU_string + String(avg_NTU) + ",";
       TDS_string = TDS_string + String(avg_TDS) + ",";
-      PH_string  = NTU_string + String(avg_PH)  + ",";
+      PH_string  = PH_string + String(avg_PH)  + ",";
+
+      avg_NTU = 0.0;
+      avg_TDS = 0.0;
+      avg_PH = 0.0;
     }
   }
 }
