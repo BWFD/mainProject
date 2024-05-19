@@ -118,7 +118,6 @@ void loop() {
     long int divingProcessTime;
     long int processTime;
     long int diveTime;
-    long int collectionTime;
 
     if(Fullcmd!="") {
 
@@ -131,18 +130,45 @@ void loop() {
             MySerial.print("AT+QISEND=0," + String(temp.length()) +"," + temp + "\r\n");
             delay(500);
           }
-          Fullcmd = "";
       }
       else
+      if(getValue(Fullcmd, ',', 0) == "simple") {
+        processTime = getValue(Fullcmd, ',', 1).toInt();
+        collectionData(processTime);
+
+        NTU_string.remove(NTU_string.length()-1);
+        TDS_string.remove(TDS_string.length()-1);
+        PH_string.remove(PH_string.length()-1);
+
+        NTU_string = "start@NTU@" + String(data_counter) + "@" + NTU_string + "@end";
+        TDS_string = "start@TDS@" + String(data_counter) + "@" + TDS_string + "@end";
+        PH_string  = "start@PH@" + String(data_counter) + "@" + PH_string + "@end";
+        
+        while(true) {
+          client = server.available();
+          if(client) {
+            if(client.available()) break;
+          }
+          MySerial.print("AT+QISEND=0," + String(NTU_string.length()) + "," + NTU_string + "\r\n");
+          Serial.println(String(NTU_string.length()) + "," + NTU_string + "\r\n");
+          delay(1000);
+
+          MySerial.print("AT+QISEND=0," + String(TDS_string.length()) + "," + TDS_string + "\r\n");
+          Serial.println(String(TDS_string.length()) + "," + TDS_string + "\r\n");
+          delay(1000);
+
+          MySerial.print("AT+QISEND=0," + String(PH_string.length()) + "," + PH_string + "\r\n");
+          Serial.println(String(PH_string.length()) + "," + PH_string + "\r\n");
+          delay(5000);
+        }
+      }
       if(getValue(Fullcmd, ',', 0) == "NULL") {
         divingProcessTime = getValue(Fullcmd, ',', 1).toInt(); //開始下潛後固定此時間會到達指定深度 
         processTime       = getValue(Fullcmd, ',', 2).toInt(); //在水下待多久
         diveTime          = getValue(Fullcmd, ',', 6).toInt(); //等待此時間後下潛
 
-
-        collectionTime    = (divingProcessTime * 2) + processTime; 
-        delay(diveTime * 1000);
-        collectionData(collectionTime);
+        delay((diveTime + divingProcessTime) * 1000);
+        collectionData(processTime);
         delay(20000);
         
         NTU_string.remove(NTU_string.length()-1);
@@ -175,9 +201,12 @@ void loop() {
           delay(5000);
         }
       }
-      Fullcmd = "";
+      NTU_string   = "";
+      TDS_string   = "";
+      PH_string    = "";
+      data_counter = 0;
+      Fullcmd      = "";
     }
-    
 }
 
 String getValue(String data, char separator, int index) { //分割命令
