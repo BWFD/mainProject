@@ -257,11 +257,11 @@ void collectionData(long int collectionTime) {
       avg_PH  = avg_PH  + (getPH()/5.0);
       
       counter = counter + 1;
-      data_counter = data_counter + 1; 
       delay(1000); 
     } 
     else {
       counter = 1;
+      data_counter = data_counter + 1; 
       NTU_string = NTU_string + String(avg_NTU) + ",";
       TDS_string = TDS_string + String(avg_TDS) + ",";
       PH_string  = PH_string + String(avg_PH)  + ",";
@@ -288,6 +288,7 @@ String getGPS() {
   
   String  Latitude  = getValue(response, ',', 2);
   String  Longitude = getValue(response, ',', 4);
+  if(Latitude == "" || Longitude == "") return ("ERROR,ERROR");
   
   return (Latitude + "," + Longitude);
 }
