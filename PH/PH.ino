@@ -6,8 +6,8 @@
  # Product: analog pH meter
  # SKU    : SEN0161
 */
-#define SensorPin 13            //pH meter Analog output to Arduino Analog Input 0
-#define Offset -2.37            //deviation compensate
+#define SensorPin 34            //pH meter Analog output to Arduino Analog Input 0
+#define Offset -5.15            //deviation compensate
 #define LED 13
 #define samplingInterval 20
 #define printInterval 800

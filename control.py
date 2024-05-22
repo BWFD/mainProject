@@ -74,6 +74,5 @@ if __name__ == '__main__':
     print('-' * 10, 'Execute', '-' * 10)
     conn_TCP(host, port, send)
 
-#   NULL,40,60,10,5,32,25
-#   NULL,3,60,10,5 15,10
+#   NULL,40,60,10,5,35,25
 #   simple,60

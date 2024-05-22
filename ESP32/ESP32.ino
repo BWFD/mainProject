@@ -118,7 +118,7 @@ void loop() {
     long int divingProcessTime;
     long int processTime;
     long int diveTime;
-
+    long int emptyTime;
     if(Fullcmd!="") {
 
       Serial.println("send Nano: "+Fullcmd); BT.print(Fullcmd);
@@ -166,10 +166,11 @@ void loop() {
         divingProcessTime = getValue(Fullcmd, ',', 1).toInt(); //開始下潛後固定此時間會到達指定深度 
         processTime       = getValue(Fullcmd, ',', 2).toInt(); //在水下待多久
         diveTime          = getValue(Fullcmd, ',', 6).toInt(); //等待此時間後下潛
+        emptyTime         = getValue(Fullcmd, ',', 5).toInt(); //推水此時間後應清空蓄水槽
 
         delay((diveTime + divingProcessTime) * 1000);
         collectionData(processTime);
-        delay(20000);
+        delay((diveTime  + emptyTime) * 1000);
         
         NTU_string.remove(NTU_string.length()-1);
         TDS_string.remove(TDS_string.length()-1);
