@@ -37,7 +37,7 @@ void loop() {
     response = getValue(response,'$',1);
     response = getValue(response,'\n',0);
 
-    //Serial.println(response);
+    Serial.println(response);
 
     Latitude = getValue(response,',',2);
     Longitude = getValue(response,',',4);

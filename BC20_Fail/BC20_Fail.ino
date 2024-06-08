@@ -25,16 +25,15 @@ void loop() {
   String Longitude="default";
   
   if(Serial.available()) {
-    /*
+    //*
     c=Serial.read();
     MySerial.write(c);
-    //*/
+    /*/
     str = Serial.readString();
     Serial.println("From Serial: "+str);
-    MySerial.print(str);
+    MySerial.print(str+"\r\n");
     //*/
   }
-  String isOK="";
   if(MySerial.available()) {
     response=MySerial.readString();
     Serial.println(response);

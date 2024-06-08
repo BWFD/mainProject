@@ -244,19 +244,19 @@ String getValue(String data, char separator, int index) { //分割命令
 
 float getNTU() {
   int sensorValue = analogRead(NTUpin);
-  float voltage = sensorValue * (5.0 / 4095.0); 
+  float voltage = sensorValue * (3.33 / 4095.0); 
   return voltage;
 }
 
 float getTDS() {
   int sensorValue = analogRead(TDSpin);
-  float voltage = sensorValue * (5.0 / 4095.0); 
+  float voltage = sensorValue * (3.33 / 4095.0); 
   return voltage;
 }
 
 float getPH() {
   int sensorValue = analogRead(PHpin);
-  float voltage = sensorValue * (5.0 / 4095.0); 
+  float voltage = sensorValue * (3.33 / 4095.0); 
   return voltage;
 }
 
