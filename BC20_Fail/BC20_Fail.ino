@@ -30,6 +30,7 @@ void loop() {
     MySerial.write(c);
     //*/
     str = Serial.readString();
+    Serial.println("From Serial: "+str);
     MySerial.print(str);
     //*/
   }

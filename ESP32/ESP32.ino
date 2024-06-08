@@ -144,10 +144,17 @@ void loop() {
         TDS_string = "start@TDS@" + String(data_counter) + "@" + TDS_string + "@end";
         PH_string  = "start@PH@" + String(data_counter) + "@" + PH_string + "@end";
         
+        String fininshStr="";
         while(true) {
           client = server.available();
           if(client) {
-            if(client.available()) break;
+            if(client.available()) {
+              fininshStr = client.readString();
+              if(fininshStr == "end_task") {
+                client.print("Task Finish");
+                break;
+              }
+            }
           }
           MySerial.print("AT+QISEND=0," + String(NTU_string.length()) + "," + NTU_string + "\r\n");
           Serial.println(String(NTU_string.length()) + "," + NTU_string + "\r\n");
@@ -159,6 +166,7 @@ void loop() {
 
           MySerial.print("AT+QISEND=0," + String(PH_string.length()) + "," + PH_string + "\r\n");
           Serial.println(String(PH_string.length()) + "," + PH_string + "\r\n");
+          
           delay(5000);
         }
       }
@@ -179,10 +187,18 @@ void loop() {
         NTU_string = "start@NTU@" + String(data_counter) + "@" + NTU_string + "@end";
         TDS_string = "start@TDS@" + String(data_counter) + "@" + TDS_string + "@end";
         PH_string  = "start@PH@" + String(data_counter) + "@" + PH_string + "@end";
+        String fininshStr="";
+       
         while(true) {
           client = server.available();
           if(client) {
-            if(client.available()) break;
+            if(client.available()) {
+              fininshStr = client.readString();
+              if(fininshStr == "end_task") {
+                client.print("Task Finish");
+                break;
+              }
+            }
           }
           String GPS_string = "start@GPS@" + getGPS() + "@end";
           MySerial.print("AT+QISEND=0," + String(GPS_string.length()) + "," + GPS_string + "\r\n");
@@ -199,6 +215,7 @@ void loop() {
 
           MySerial.print("AT+QISEND=0," + String(PH_string.length()) + "," + PH_string + "\r\n");
           Serial.println(String(PH_string.length()) + "," + PH_string + "\r\n");
+
           delay(5000);
         }
       }

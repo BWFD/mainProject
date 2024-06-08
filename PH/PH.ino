@@ -7,7 +7,7 @@
  # SKU    : SEN0161
 */
 #define SensorPin 34            //pH meter Analog output to Arduino Analog Input 0
-#define Offset -5.15            //deviation compensate
+#define Offset 0.56            //deviation compensate
 #define LED 13
 #define samplingInterval 20
 #define printInterval 800
@@ -29,7 +29,7 @@ void loop(void)
   {
       pHArray[pHArrayIndex++]=analogRead(SensorPin);
       if(pHArrayIndex==ArrayLenth)pHArrayIndex=0;
-      voltage = avergearray(pHArray, ArrayLenth)*5.0/4095;
+      voltage = avergearray(pHArray, ArrayLenth)*3.3/4095;
       pHValue = 3.5*voltage+Offset;
       samplingTime=millis();
   }
